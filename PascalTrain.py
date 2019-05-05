@@ -25,7 +25,7 @@ CORES = 4#int(float(multiprocessing.cpu_count())*0.25)
 # os.chdir('/export/home/bbrattol/git/JigsawPuzzlePytorch/Pascal_finetuning')
 # from PascalLoader import DataLoader
 from PascalNetwork import Network
-from Resnet import resnet50
+from Resnet import resnet18
 from Utils import MyDataLoader
 
 #sys.path.append('/export/home/bbrattol/git/JigsawPuzzlePytorch/Architecture')
@@ -107,7 +107,7 @@ def main():
     iter_per_epoch = N/args.batch
     # Network initialize
     #net = Network(groups = 2)
-    net = resnet50(num_classes=21)
+    net = resnet18(num_classes=21)
     if args.gpu is not None:
         net.cuda()
     
@@ -133,7 +133,7 @@ def main():
 #     logger_test  = Logger(args.checkpoint+'/test')
     
     ############## TRAINING ###############
-    print('Start training: lr %f, batch size %d'%(args.lr,args.batch))
+    print('Start training: lr %f, batch size %d' % (args.lr, args.batch))
     print('Checkpoint: '+args.checkpoint)
     
     # Train the Model
@@ -166,7 +166,7 @@ def main():
             if steps % 20 == 0:
                 # logger_train.scalar_summary('mAP', np.mean(mAP[-20:]), steps)
                 # logger_train.scalar_summary('loss', loss, steps)
-                data = images.cpu().data.numpy().transpose([0,2,3,1])
+                data = images.cpu().data.numpy().transpose([0, 2, 3, 1])
                 # logger_train.image_summary('input', data[:10], steps)
                 # print("Epoch="+str(steps))
                 # print("mAP:%f" % (np.mean(mAP[-20:])))
