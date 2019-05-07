@@ -191,7 +191,8 @@ def test(net, criterion, logger, val_loader, steps):
     net.eval()
     for i, (images, labels) in enumerate(val_loader):
         images = images.view((-1, 3, 224, 224))
-        images = Variable(images, volatile=True)
+        with torch.no_grad():
+            images = Variable(images, volatile=True)
         if args.gpu is not None:
             images = images.cuda()
         
