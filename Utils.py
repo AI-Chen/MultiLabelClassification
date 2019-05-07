@@ -109,10 +109,10 @@ class MyDataLoader(data.Dataset):
         return np.array(names), np.array(labels).astype(np.float32)
 
     def __init_classes(self):
-        self.classes = ('__background__', 'aeroplane', 'bicycle', 'bird', 'boat',
-                        'bottle', 'bus', 'car', 'cat', 'chair',
-                        'cow', 'diningtable', 'dog', 'horse',
-                        'motorbike', 'person', 'pottedplant',
-                        'sheep', 'sofa', 'train', 'tvmonitor')
+        self.classes = ('person', 'bird', 'cat', 'cow',
+                        'dog', 'horse', 'sheep', 'aeroplane', 'bicycle',
+                        'boat', 'bus', 'car', 'motorbike',
+                        'train', 'bottle', 'chair',
+                        'diningtable', 'pottedplant', 'sofa', 'tvmonitor')
         self.num_classes = len(self.classes)
         self.class_to_ind = dict(zip(self.classes, range(self.num_classes)))

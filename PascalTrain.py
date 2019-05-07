@@ -107,7 +107,7 @@ def main():
     iter_per_epoch = N/args.batch
     # Network initialize
     #net = Network(groups = 2)
-    net = resnet18(num_classes=21)
+    net = resnet18(num_classes=20)
     if args.gpu is not None:
         net.cuda()
     
