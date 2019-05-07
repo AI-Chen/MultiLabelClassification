@@ -5,7 +5,6 @@ Created on Thu Sep 14 12:16:31 2017
 @author: bbrattol
 """
 import os, sys, numpy as np
-import matplotlib.pyplot as plt
 import argparse
 
 from sklearn.metrics import average_precision_score
@@ -15,7 +14,6 @@ from sklearn.metrics import average_precision_score
 from Utils import Logger
 
 import torch
-# import torch.nn as nn
 from torch.autograd import Variable
 import torchvision.transforms as transforms
 
@@ -25,7 +23,7 @@ CORES = 4#int(float(multiprocessing.cpu_count())*0.25)
 # os.chdir('/export/home/bbrattol/git/JigsawPuzzlePytorch/Pascal_finetuning')
 # from PascalLoader import DataLoader
 from PascalNetwork import Network
-from Resnet import resnet18
+from Network import resnet18
 from Utils import MyDataLoader
 
 #sys.path.append('/export/home/bbrattol/git/JigsawPuzzlePytorch/Architecture')
@@ -70,12 +68,14 @@ def main():
         os.environ["CUDA_VISIBLE_DEVICES"] = str(args.gpu)
     else:
         print('CPU mode')
+
+    print(args.pascal_path)
     
     normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                      std=[0.229, 0.224, 0.225])
     
     train_transform = transforms.Compose([
-            transforms.RandomSizedCrop(224),
+            transforms.RandomResizedCrop(224),
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
             normalize,
@@ -84,7 +84,7 @@ def main():
     val_transform = transforms.Compose([
             #transforms.Scale(256),
             #transforms.CenterCrop(227),
-            transforms.RandomSizedCrop(224),
+            transforms.RandomResizedCrop(224),
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
             normalize,
@@ -104,7 +104,7 @@ def main():
                                              num_workers=CORES)
     
     N = len(train_data.names)
-    iter_per_epoch = N/args.batch
+    iter_per_epoch = int(N/args.batch)
     # Network initialize
     #net = Network(groups = 2)
     net = resnet18(num_classes=20)
@@ -138,7 +138,7 @@ def main():
     
     # Train the Model
     steps = args.iter_start
-    for epoch in range(iter_per_epoch*args.iter_start,args.epochs):
+    for epoch in range(iter_per_epoch*args.iter_start, args.epochs):
         adjust_learning_rate(optimizer, epoch, init_lr=args.lr, step=80, decay=0.1)
         
         mAP = []

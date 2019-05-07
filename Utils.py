@@ -94,17 +94,27 @@ class MyDataLoader(data.Dataset):
     def __dataset_info(self):
         """
         Generate names(np.array, with string elements) and labels(np.array, with array(number) elements).
+        The labels appears like this: [0 0 0 0 0 1 0 0 0 0 0 0 1 0 0 1 0 0 0 0]
+        Those with value 1 means the object exists in this image
         :return: names labels
         """
-        annotation_file = os.path.join(self.data_path, 'annotations.txt')
+        annotation_file = os.path.join(self.data_path, self.train_or_test, 'annotations.txt')
         with open(annotation_file, 'r') as fp:
             lines = fp.readlines()
 
         names = []
         labels = []
         for line in lines:
-            names.append(line.split('\0')[0])
-            labels.append(np.array(line.split('\0')[1:]))
+            # Name
+            names.append(line.strip('\n').split(' ')[0])
+
+            # Label
+            str_label = line.strip('\n').split(' ')[1:]
+            num_label = [int(x) for x in str_label]
+            flag_label = np.zeros(self.num_classes)
+            flag_label[num_label] = 1
+
+            labels.append(np.array(flag_label))
 
         return np.array(names), np.array(labels).astype(np.float32)
 
