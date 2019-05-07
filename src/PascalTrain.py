@@ -4,14 +4,13 @@ Created on Thu Sep 14 12:16:31 2017
 
 @author: bbrattol
 """
-import os, sys, numpy as np
+import os, numpy as np
 import argparse
 
 from sklearn.metrics import average_precision_score
 
 # sys.path.append('../Utils')
 # TODO: Finish the class Logger(I don't actually know what it is used for)
-from Utils import Logger
 
 import torch
 from torch.autograd import Variable
@@ -22,15 +21,14 @@ CORES = 4# int(float(multiprocessing.cpu_count())*0.25)
 
 # os.chdir('/export/home/bbrattol/git/JigsawPuzzlePytorch/Pascal_finetuning')
 # from PascalLoader import DataLoader
-from PascalNetwork import Network
-from Network import resnet18
-from Utils import MyDataLoader
+from src.Network import resnet18
+from src.Utils import MyDataLoader
 
 #sys.path.append('/export/home/bbrattol/git/JigsawPuzzlePytorch/Architecture')
 #from alexnet import AlexNet as Network
 
 # sys.path.append('../Utils')
-from Utils import adjust_learning_rate
+from src.Utils import adjust_learning_rate
 
 parser = argparse.ArgumentParser(description='Train network on Pascal VOC 2012')
 parser.add_argument('pascal_path', type=str, help='Path to Pascal VOC 2012 folder')
