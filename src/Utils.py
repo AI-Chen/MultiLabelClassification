@@ -5,6 +5,7 @@ import torch.utils.data as data
 from scipy.misc import imread
 from PIL import Image
 
+
 def adjust_learning_rate(optimizer, epoch, init_lr, step=80, decay=0.1):
     """
     This function adjust the learning rate automatically during training.
@@ -30,11 +31,11 @@ class Logger:
 
 
 class MyDataLoader(data.Dataset):
-    def __init__(self, transform, trainval='train', data_path='../VOC2012', random_crops=0):
+    def __init__(self, transform, trainval='train', data_path='../dataset', random_crops=0):
         """
-        Initialize the dataset.
+        Initialize the dataset. Inherited from torch.data.Dataset, __len__ and __getitem__ need to be implemented.
         VOC(Labels only) tree:
-        --root
+        --dataset root
          |--train
          | |--JPEGImages(dir)
          | |--annotations.txt
@@ -56,7 +57,7 @@ class MyDataLoader(data.Dataset):
 
     def __getitem__(self, index):
         """
-        This is the getitem func which enables the usage of [] operator
+        This is the getitem func which enables enumerator. Implemented.
         :param index: the index of the picture
         :return: tuple (picture, its label(s))
         """
@@ -89,6 +90,10 @@ class MyDataLoader(data.Dataset):
         return x, y
 
     def __len__(self):
+        """
+        How many images are there. Implemented.
+        :return: length
+        """
         return len(self.names)
 
     def __dataset_info(self):

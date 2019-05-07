@@ -4,7 +4,8 @@ Created on Thu Sep 14 12:16:31 2017
 
 @author: bbrattol
 """
-import os, numpy as np
+import os
+import numpy as np
 import argparse
 
 from sklearn.metrics import average_precision_score
@@ -17,17 +18,13 @@ from torch.autograd import Variable
 import torchvision.transforms as transforms
 
 # import multiprocessing
-CORES = 4# int(float(multiprocessing.cpu_count())*0.25)
+CORES = 4  # int(float(multiprocessing.cpu_count())*0.25)
 
 # os.chdir('/export/home/bbrattol/git/JigsawPuzzlePytorch/Pascal_finetuning')
 # from PascalLoader import DataLoader
 from src.Network import resnet18
 from src.Utils import MyDataLoader
 
-#sys.path.append('/export/home/bbrattol/git/JigsawPuzzlePytorch/Architecture')
-#from alexnet import AlexNet as Network
-
-# sys.path.append('../Utils')
 from src.Utils import adjust_learning_rate
 
 parser = argparse.ArgumentParser(description='Train network on Pascal VOC 2012')
@@ -44,13 +41,13 @@ parser.add_argument('--checkpoint', default='checkpoints/', type=str, help='chec
 parser.add_argument('--lr', default=0.001, type=float, help='learning rate for SGD optimizer')
 parser.add_argument('--crops', default=10, type=int, help='number of random crops during testing')
 args = parser.parse_args()
-#args = parser.parse_args([
-#    '/net/hci-storage02/groupfolders/compvis/datasets/VOC2007/',
+# args = parser.parse_args([
+#    '../dataset',
 #    '--gpu','0',
-#])
+# ])
 
 
-def compute_mAP(labels,outputs):
+def compute_mAP(labels, outputs):
     y_true = labels.cpu().numpy()
     y_pred = outputs.cpu().numpy()
     AP = []
@@ -126,7 +123,7 @@ def main():
         os.makedirs(args.checkpoint+'/train')
         os.makedirs(args.checkpoint+'/test')
     
-#    logger_test = None
+#     logger_test = None
 #     logger_train = Logger(args.checkpoint+'/train')
 #     logger_test  = Logger(args.checkpoint+'/test')
     
