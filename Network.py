@@ -1,3 +1,4 @@
+import torch
 import torch.nn as nn
 import math
 # from utee import misc
@@ -117,6 +118,10 @@ class ResNet(nn.Module):
             layers.append(block(self.inplanes, planes))
 
         return nn.Sequential(*layers)
+
+    def save(self, checkpointFold, epoch):
+        filename = '%s/jps_%03i.pth.tar'%(checkpointFold, epoch)
+        torch.save(self.state_dict(), filename)
 
     def forward(self, x):
         x = self.group1(x)

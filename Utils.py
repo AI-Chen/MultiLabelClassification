@@ -60,12 +60,12 @@ class MyDataLoader(data.Dataset):
         :param index: the index of the picture
         :return: tuple (picture, its label(s))
         """
-        x = imread(os.path.join(self.data_path, self.train_or_test, '/JPEGImages/', self.names[index] + '.jpg'),
+        x = imread(os.path.join(self.data_path, self.train_or_test, 'JPEGImages', self.names[index]+'.jpg'),
                    mode='RGB')
         x = Image.fromarray(x)
 
         # Resize directly instead of the strange operations done below...
-        x = x.resize(224, 224)
+        x = x.resize((224, 224), Image.BILINEAR)
 
         # scale = np.random.rand() * 2 + 0.25
         # w = int(x.size[0] * scale)

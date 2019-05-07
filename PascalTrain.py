@@ -18,7 +18,7 @@ from torch.autograd import Variable
 import torchvision.transforms as transforms
 
 # import multiprocessing
-CORES = 4#int(float(multiprocessing.cpu_count())*0.25)
+CORES = 4# int(float(multiprocessing.cpu_count())*0.25)
 
 # os.chdir('/export/home/bbrattol/git/JigsawPuzzlePytorch/Pascal_finetuning')
 # from PascalLoader import DataLoader
@@ -69,7 +69,7 @@ def main():
     else:
         print('CPU mode')
 
-    print(args.pascal_path)
+    # print(args.pascal_path)
     
     normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                      std=[0.229, 0.224, 0.225])
@@ -190,7 +190,7 @@ def test(net, criterion, logger, val_loader, steps):
     mAP = []
     net.eval()
     for i, (images, labels) in enumerate(val_loader):
-        images = images.view((-1, 3, 227, 227))
+        images = images.view((-1, 3, 224, 224))
         images = Variable(images, volatile=True)
         if args.gpu is not None:
             images = images.cuda()
@@ -198,8 +198,8 @@ def test(net, criterion, logger, val_loader, steps):
         # Forward + Backward + Optimize
         outputs = net(images)
         outputs = outputs.cpu().data
-        outputs = outputs.view((-1,args.crops,21))
-        outputs = outputs.mean(dim=1).view((-1,21))
+        outputs = outputs.view((-1,args.crops,20))
+        outputs = outputs.mean(dim=1).view((-1,20))
         
         #score = tnt.meter.mAPMeter(outputs, labels)
         mAP.append(compute_mAP(labels,outputs))
