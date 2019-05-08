@@ -4,6 +4,7 @@ import torch
 import torch.utils.data as data
 from scipy.misc import imread
 from PIL import Image
+import torchvision.models as models
 
 
 def adjust_learning_rate(optimizer, epoch, init_lr, step=80, decay=0.1):
@@ -20,6 +21,37 @@ def adjust_learning_rate(optimizer, epoch, init_lr, step=80, decay=0.1):
     lr = init_lr*(decay**(epoch//step))
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr
+
+
+def load_model_from_file(filepath, load_fc=None):
+    """
+    Load the trained model from .pth file. Only for the same model trained before
+    :param filepath: the path to .pth file
+    :param load_fc: whether to load fc layer
+    :return: loaded model
+    """
+    # Get the initial network
+    dict_init = torch.load(filepath)
+    keys = [k for k, v in dict_init.items()]
+    keys.sort()
+    # Generate a new network
+    net = models.resnet18(pretrained=False, num_classes=20)
+    model_dict = net.state_dict()
+    # load the layers
+    to_load = []
+    for k in keys:
+        if k not in model_dict:
+            continue
+        if 'conv' in k:
+            to_load.append(k)
+        if load_fc is not None and 'fc' in k:
+            to_load.append(k)
+    # load the dict
+    dict_init = {k: v for k, v in dict_init.items() if k in to_load and k in model_dict}
+    model_dict.update(dict_init)
+    net.load_state_dict(model_dict)
+
+    return net
 
 
 class Logger:

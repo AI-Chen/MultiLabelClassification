@@ -5,6 +5,7 @@ Created on Thu Sep 14 12:16:31 2017
 @author: bbrattol
 """
 import os
+import time
 import numpy as np
 import argparse
 
@@ -16,28 +17,28 @@ from sklearn.metrics import average_precision_score
 import torch
 from torch.autograd import Variable
 import torchvision.transforms as transforms
+import torchvision.models as models
 
 # import multiprocessing
 CORES = 4  # int(float(multiprocessing.cpu_count())*0.25)
 
 # os.chdir('/export/home/bbrattol/git/JigsawPuzzlePytorch/Pascal_finetuning')
 # from PascalLoader import DataLoader
-from src.Network import resnet18
-from src.Utils import MyDataLoader
-
-from src.Utils import adjust_learning_rate
+from Network import resnet18
+from Utils import MyDataLoader, adjust_learning_rate, load_model_from_file
 
 parser = argparse.ArgumentParser(description='Train network on Pascal VOC 2012')
 parser.add_argument('pascal_path', type=str, help='Path to Pascal VOC 2012 folder')
-parser.add_argument('--model', default=None, type=str, help='Pretrained model')
-#parser.add_argument('--freeze', dest='evaluate', action='store_true', help='freeze layers up to conv5')
-parser.add_argument('--freeze', default=None, type=int, help='freeze layers up to conv5')
+parser.add_argument('--finetune', default=None, type=int, help='whether to use pytorch pretrained model and finetune')
+parser.add_argument('--model', default=None, type=str, help='pretrained model path')
+# parser.add_argument('--freeze', dest='evaluate', action='store_true', help='freeze layers up to conv5')
+# parser.add_argument('--freeze', default=None, type=int, help='freeze layers up to conv5')
 parser.add_argument('--fc', default=None, type=int, help='load fc6 and fc7 from model')
 parser.add_argument('--gpu', default=None, type=int, help='gpu id')
 parser.add_argument('--epochs', default=160, type=int, help='max training epochs')
 parser.add_argument('--iter_start', default=0, type=int, help='Starting iteration count')
 parser.add_argument('--batch', default=10, type=int, help='batch size')
-parser.add_argument('--checkpoint', default='checkpoints/', type=str, help='checkpoint folder')
+parser.add_argument('--checkpoint', default='../checkpoints/', type=str, help='checkpoint folder')
 parser.add_argument('--lr', default=0.001, type=float, help='learning rate for SGD optimizer')
 parser.add_argument('--crops', default=10, type=int, help='number of random crops during testing')
 args = parser.parse_args()
@@ -45,6 +46,7 @@ args = parser.parse_args()
 #    '../dataset',
 #    '--gpu','0',
 # ])
+prefix = time.strftime("%y%m%d_%H%M", time.localtime())
 
 
 def compute_mAP(labels, outputs):
@@ -57,6 +59,7 @@ def compute_mAP(labels, outputs):
 
 
 def main():
+    # Training devices
     if args.gpu is not None:
         print('Using GPU %d' % args.gpu)
         os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
@@ -64,8 +67,6 @@ def main():
     else:
         print('CPU mode')
 
-    # print(args.pascal_path)
-    
     normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                      std=[0.229, 0.224, 0.225])
     
@@ -100,20 +101,32 @@ def main():
     
     N = len(train_data.names)
     iter_per_epoch = int(N/args.batch)
+
     # Network initialize
-    #net = Network(groups = 2)
-    net = resnet18(num_classes=20)
-    if args.gpu is not None:
-        net.cuda()
-    
-    if args.model is not None:
-        net.load(args.model, args.fc)
-    
-    if args.freeze is not None:
+    # net = resnet18(pretrained=True, num_classes=20)
+    # net = models.resnet18(pretrained=True if args.finetune is not None else False)
+
+    # finetune: freeze some layers and modify the fc layer.
+    if args.finetune is not None:
+        # Initialize the network
+        net = models.resnet18(pretrained=True)
         # Freeze layers up to conv4
-        for i, (name,param) in enumerate(net.named_parameters()):
+        for i, (name, param) in enumerate(net.named_parameters()):
             if 'conv' in name or 'features' in name:
                 param.requires_grad = False
+        # Modify the fc layer
+        in_channel = net.fc.in_features
+        net.fc = torch.nn.Linear(in_features=in_channel, out_features=20)
+
+    elif args.model is not None:
+        net = load_model_from_file(args.model, args.fc)
+
+    else:
+        net = models.resnet18(pretrained=False, num_classes=20)
+
+    if args.gpu is not None:
+        net.cuda()
+
     
     criterion = torch.nn.MultiLabelSoftMarginLoss()
     optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, net.parameters()),
@@ -123,10 +136,7 @@ def main():
         os.makedirs(args.checkpoint+'/train')
         os.makedirs(args.checkpoint+'/test')
     
-#     logger_test = None
-#     logger_train = Logger(args.checkpoint+'/train')
-#     logger_test  = Logger(args.checkpoint+'/test')
-    
+
     ############## TRAINING ###############
     print('Start training: lr %f, batch size %d' % (args.lr, args.batch))
     print('Checkpoint: '+args.checkpoint)
@@ -159,18 +169,13 @@ def main():
                 print('[%d/%d] %d), Loss: %.3f, mAP %.2f%%' % (epoch+1, args.epochs, steps, loss,100*np.mean(mAP[-20:])))
             
             if steps % 20 == 0:
-                # logger_train.scalar_summary('mAP', np.mean(mAP[-20:]), steps)
-                # logger_train.scalar_summary('loss', loss, steps)
                 data = images.cpu().data.numpy().transpose([0, 2, 3, 1])
-                # logger_train.image_summary('input', data[:10], steps)
-                # print("Epoch="+str(steps))
-                # print("mAP:%f" % (np.mean(mAP[-20:])))
-                # print("loss:%f" % loss)
 
             steps += 1
         
         if epoch % 5 == 0:
-            net.save(args.checkpoint,epoch+1)
+            filename = '%s/%s_%03i.pth' % (args.checkpoint, prefix, epoch+1)
+            torch.save(net.state_dict(), filename)
             print('Saved: '+args.checkpoint)
         
         if epoch % 5 == 0:
@@ -187,17 +192,17 @@ def test(net, criterion, logger, val_loader, steps):
     for i, (images, labels) in enumerate(val_loader):
         images = images.view((-1, 3, 224, 224))
         with torch.no_grad():
-            images = Variable(images, volatile=True)
+            images = Variable(images)
         if args.gpu is not None:
             images = images.cuda()
         
         # Forward + Backward + Optimize
         outputs = net(images)
         outputs = outputs.cpu().data
-        outputs = outputs.view((-1,args.crops,20))
-        outputs = outputs.mean(dim=1).view((-1,20))
+        outputs = outputs.view((-1, args.crops, 20))
+        outputs = outputs.mean(dim=1).view((-1, 20))
         
-        #score = tnt.meter.mAPMeter(outputs, labels)
+        # score = tnt.meter.mAPMeter(outputs, labels)
         mAP.append(compute_mAP(labels,outputs))
     
     if logger is not None:
