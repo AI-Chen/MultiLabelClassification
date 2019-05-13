@@ -47,6 +47,8 @@ args = parser.parse_args()
 # args = parser.parse_args([
 #    '../dataset',
 #    '--gpu','0',
+#    '--finetune','1'
+#    '--model','resnet18'
 # ])
 prefix = time.strftime("%y%m%d_%H%M", time.localtime())
 models ={
