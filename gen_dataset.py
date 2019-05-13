@@ -25,16 +25,15 @@ def gen_dataset(dataset_root="/home/tsinghuaee13/dataset"):
             shutil.copy(os.path.join(origin_path, "JPEGImages", img_name),
                         os.path.join(train_path, "JPEGImages", img_name))
             print("image written, index%d" % idx, end='\r')
-
+    # write annotations
     with open(os.path.join(origin_path, "annotations.txt"), "r") as fin:
-        with open(os.path.join(test_path, "annotations.txt"), "w") as fout:
-            for line in fin.readlines():
-                if line[0:4] == "2007" or line[0:4] == "2008":
-                    fout.write(line)
-        with open(os.path.join(train_path, "annotations.txt"), "w") as fout:
-            for line in fin.readlines():
-                if line[0:4] == "2009" or line[0:4] == "2010" or line[0:4] == "2011" or line[0:4] == "2012":
-                    fout.write(line)
+        with open(os.path.join(test_path, "annotations.txt"), "w") as test_out:
+            with open(os.path.join(train_path, 'annotations.txt'), 'w') as train_out:
+                for line in fin.readlines():
+                    if line[0:4] == "2007" or line[0:4] == "2008":
+                        test_out.write(line)
+                    else:
+                        train_out.write(line)
 
 
 parser = argparse.ArgumentParser(description="A tool used to generate train set and test set")
