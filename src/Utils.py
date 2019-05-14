@@ -4,7 +4,16 @@ import torch
 import torch.utils.data as data
 from scipy.misc import imread
 from PIL import Image
-import torchvision.models as models
+from Network import *
+
+
+models ={
+    'resnet18': resnet18,
+    'resnet34': resnet34,
+    'resnet50': resnet50,
+    'resnet101': resnet101,
+    'resnet152': resnet152
+}
 
 
 def adjust_learning_rate(optimizer, epoch, init_lr, step=80, decay=0.1):
@@ -23,10 +32,11 @@ def adjust_learning_rate(optimizer, epoch, init_lr, step=80, decay=0.1):
         param_group['lr'] = lr
 
 
-def load_model_from_file(filepath, load_fc=None):
+def load_model_from_file(filepath, model="resnet18", load_fc=None):
     """
     Load the trained model from .pth file. Only for the same model trained before
     :param filepath: the path to .pth file
+    :param model: the backbone network
     :param load_fc: whether to load fc layer
     :return: loaded model
     """
@@ -35,16 +45,14 @@ def load_model_from_file(filepath, load_fc=None):
     keys = [k for k, v in dict_init.items()]
     keys.sort()
     # Generate a new network
-    net = models.resnet18(pretrained=False, num_classes=20)
+    net = models[model](pretrained=False, num_classes=20)
     model_dict = net.state_dict()
     # load the layers
     to_load = []
     for k in keys:
         if k not in model_dict:
             continue
-        if 'conv' in k:
-            to_load.append(k)
-        if load_fc is not None and 'fc' in k:
+        if load_fc is not None or 'fc' not in k:
             to_load.append(k)
     # load the dict
     dict_init = {k: v for k, v in dict_init.items() if k in to_load and k in model_dict}

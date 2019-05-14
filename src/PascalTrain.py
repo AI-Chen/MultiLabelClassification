@@ -126,7 +126,7 @@ def main():
         net.fc = torch.nn.Linear(in_features=in_channel, out_features=20)
 
     elif args.modelpath is not None:
-        net = load_model_from_file(args.modelpath, args.fc)
+        net = load_model_from_file(args.modelpath, model=args.model, load_fc=args.fc)
 
     else:
         net = models[args.model](pretrained=False, num_classes=20)
@@ -145,13 +145,17 @@ def main():
     
 
     ############## TRAINING ###############
-    print('Start training: lr %f, batch size %d' % (args.lr, args.batch))
-    print('Checkpoint: '+args.checkpoint)
+    print("Start training, lr: %f, batch-size: %d" % (args.lr, args.batch))
+    print("Model: " + args.model)
+    print("Checkpoint Path: "+args.checkpoint)
+    print("Time: "+prefix)
+    if args.modelpath is not None:
+        print("Training from past model: "+args.modelpath)
     
     # Train the Model
     steps = args.iter_start
     for epoch in range(iter_per_epoch*args.iter_start, args.epochs):
-        adjust_learning_rate(optimizer, epoch, init_lr=args.lr, step=80, decay=0.1)
+        adjust_learning_rate(optimizer, epoch, init_lr=args.lr, step=20, decay=0.1)
         
         mAP = []
         for i, (images, labels) in enumerate(train_loader):
