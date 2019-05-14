@@ -33,8 +33,6 @@ parser.add_argument('--finetune', default=None, type=int, help='whether to use p
 parser.add_argument('--model', default='resnet18', type=str, help='which backbone network to use',
                     choices=['resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152'])
 parser.add_argument('--modelpath', default=None, type=str, help='pretrained model path')
-# parser.add_argument('--freeze', dest='evaluate', action='store_true', help='freeze layers up to conv5')
-# parser.add_argument('--freeze', default=None, type=int, help='freeze layers up to conv5')
 parser.add_argument('--fc', default=None, type=int, help='load fc6 and fc7 from model')
 parser.add_argument('--gpu', default=None, type=int, help='gpu id')
 parser.add_argument('--epochs', default=160, type=int, help='max training epochs')
@@ -88,8 +86,6 @@ def main():
         ])
     
     val_transform = transforms.Compose([
-            #transforms.Scale(256),
-            #transforms.CenterCrop(227),
             transforms.RandomResizedCrop(224),
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
@@ -117,9 +113,9 @@ def main():
     if args.finetune is not None:
         # Initialize the network
         net = models[args.model](pretrained=True)
-        # Freeze layers up to conv4
+        # Freeze conv layers
         for i, (name, param) in enumerate(net.named_parameters()):
-            if 'conv' in name or 'features' in name:
+            if 'conv' in name:
                 param.requires_grad = False
         # Modify the fc layer
         in_channel = net.fc.in_features
@@ -179,9 +175,6 @@ def main():
             if steps % 100 == 0:
                 print('[%d/%d] %d), Loss: %.3f, mAP %.2f%%' % (epoch+1, args.epochs, steps, loss,100*np.mean(mAP[-20:])))
             
-            if steps % 20 == 0:
-                data = images.cpu().data.numpy().transpose([0, 2, 3, 1])
-
             steps += 1
         
         if epoch % 5 == 0:
