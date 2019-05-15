@@ -15,7 +15,6 @@ from sklearn.metrics import average_precision_score
 # TODO: Finish the class Logger(I don't actually know what it is used for)
 
 import torch
-from torch.autograd import Variable
 import torchvision.transforms as transforms
 # import torchvision.models as models
 
@@ -155,8 +154,6 @@ def main():
         
         mAP = []
         for i, (images, labels) in enumerate(train_loader):
-            images = Variable(images)
-            labels = Variable(labels)
             if args.gpu is not None:
                 images = images.cuda()
                 labels = labels.cuda()
@@ -195,8 +192,6 @@ def test(net, criterion, logger, val_loader, steps):
     net.eval()
     for i, (images, labels) in enumerate(val_loader):
         images = images.view((-1, 3, 224, 224))
-        with torch.no_grad():
-            images = Variable(images)
         if args.gpu is not None:
             images = images.cuda()
         
