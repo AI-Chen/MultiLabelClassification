@@ -5,6 +5,7 @@ from scipy.misc import imread
 from PIL import Image
 import torchvision.transforms as transforms
 from torch.autograd import Variable
+import matplotlib.pyplot as plt
 
 from Utils import load_model_from_file, MyDataLoader
 
@@ -17,8 +18,8 @@ def gethreshold(val_loader, transform, gpu=None, model_path='../checkpoints/resn
         os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu)
 
     net.eval()
-    ymin = np.ones(20)
-    ymax = np.zeros(20)
+    y1=[]
+    y0=[]
     for i, (images, labels) in enumerate(val_loader):
         images = images.view((-1, 3, 224, 224))
         if gpu is not None:
@@ -33,18 +34,20 @@ def gethreshold(val_loader, transform, gpu=None, model_path='../checkpoints/resn
             y_pred[k] = np.divide(np.exp(y_pred[k]), np.sum(np.exp(y_pred[k])))
 
         for k in range(0, val_loader.batch_size):
-            for j in range(20):
-                if y_true[k][j] == 0:
-                    if y_pred[k][j] > ymax[j]:
-                        ymax[j] = y_pred[k][j]
-                else:
-                    if y_pred[k][j] < ymin[j]:
-                        ymin[j] = y_pred[k][j]
+            if y_true[k][0] == 1:
+                y1.append(y_pred[k][0])
+            else:
+                y0.append(y_pred[k][0])
+
 
         if i % 20 == 0:
-            print('ymin:', ymin)
-            print('ymax:', ymax)
-    return ymin, ymax
+            plt.xlabel("X")
+            plt.title("1")
+            plt.hist(y1)
+            plt.xlabel("X")
+            plt.title("0")
+            plt.hist(y0)
+
 
 
 def test(transform, model_path='../checkpoints/190512_1711_011.pth', img_path='../test.jpg', model="resnet18",
