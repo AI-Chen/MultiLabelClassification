@@ -5,6 +5,7 @@ import torch.utils.data as data
 from scipy.misc import imread
 from PIL import Image
 from Network import *
+from sklearn.metrics import average_precision_score
 
 
 models ={
@@ -15,6 +16,40 @@ models ={
     'resnet152': resnet152
 }
 
+
+def compute_mAP(labels, outputs):
+    y_true = labels.cpu().numpy()
+    y_pred = outputs.cpu().numpy()
+    AP = []
+    for i in range(y_true.shape[0]):
+        AP.append(average_precision_score(y_true[i], y_pred[i]))
+    return np.mean(AP)
+
+
+def test_mAP(net, logger, val_loader, steps, gpu, crops):
+    mAP = []
+    net.eval()
+    for i, (images, labels) in enumerate(val_loader):
+        images = images.view((-1, 3, 224, 224))
+        if gpu is not None:
+            images = images.cuda()
+
+        # Forward + Backward + Optimize
+        outputs = net(images)
+        outputs = outputs.cpu().data
+        if crops != 0:
+            outputs = outputs.view((-1, crops, 20))
+            outputs = outputs.mean(dim=1).view((-1, 20))
+        else:
+            outputs = outputs.view((-1,20))
+
+        # score = tnt.meter.mAPMeter(outputs, labels)
+        mAP.append(compute_mAP(labels, outputs))
+
+    if logger is not None:
+        logger.scalar_summary('mAP', np.mean(mAP), steps)
+    print('TESTING: %d), mAP %.2f%%' % (steps, 100 * np.mean(mAP)))
+    net.train()
 
 def adjust_learning_rate(optimizer, epoch, init_lr, step=80, decay=0.1):
     """
