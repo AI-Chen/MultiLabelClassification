@@ -25,7 +25,7 @@ CORES = 4  # int(float(multiprocessing.cpu_count())*0.25)
 # os.chdir('/export/home/bbrattol/git/JigsawPuzzlePytorch/Pascal_finetuning')
 # from PascalLoader import DataLoader
 from Network import resnet18, resnet34, resnet50, resnet101, resnet152
-from Utils import MyDataLoader, adjust_learning_rate, load_model_from_file
+from Utils import MyDataLoader, adjust_learning_rate, load_model_from_file, test_map, compute_mAP
 
 parser = argparse.ArgumentParser(description='Train network on Pascal VOC 2012')
 parser.add_argument('pascal_path', type=str, help='Path to Pascal VOC 2012 folder')
@@ -56,14 +56,6 @@ models ={
     'resnet101': resnet101,
     'resnet152': resnet152
 }
-
-def compute_mAP(labels, outputs):
-    y_true = labels.cpu().numpy()
-    y_pred = outputs.cpu().numpy()
-    AP = []
-    for i in range(y_true.shape[0]):
-        AP.append(average_precision_score(y_true[i], y_pred[i]))
-    return np.mean(AP)
 
 
 def main():
@@ -183,36 +175,14 @@ def main():
             print('Saved: '+args.checkpoint)
         
         if epoch % 5 == 0:
-            test(net, criterion, None, val_loader, steps)
+            test_map(net, None, val_loader, steps, args.gpu, args.crop)
         
         if os.path.exists(args.checkpoint+'/stop.txt'):
             # break without using CTRL+C
             break
 
 
-def test(net, criterion, logger, val_loader, steps):
-    mAP = []
-    net.eval()
-    for i, (images, labels) in enumerate(val_loader):
-        images = images.view((-1, 3, 224, 224))
-        with torch.no_grad():
-            images = Variable(images)
-        if args.gpu is not None:
-            images = images.cuda()
-        
-        # Forward + Backward + Optimize
-        outputs = net(images)
-        outputs = outputs.cpu().data
-        outputs = outputs.view((-1, args.crops, 20))
-        outputs = outputs.mean(dim=1).view((-1, 20))
-        
-        # score = tnt.meter.mAPMeter(outputs, labels)
-        mAP.append(compute_mAP(labels,outputs))
-    
-    if logger is not None:
-        logger.scalar_summary('mAP', np.mean(mAP), steps)
-    print('TESTING: %d), mAP %.2f%%' % (steps, 100*np.mean(mAP)))
-    net.train()
+
 
 
 if __name__ == "__main__":

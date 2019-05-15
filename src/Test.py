@@ -17,8 +17,8 @@ def gethreshold(val_loader, transform, gpu=None, model_path='../checkpoints/resn
         os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu)
 
     net.eval()
-    ymin = np.zeros(20)
-    ymax = np.linspace(-100, -100, 20)
+    ymin = np.ones(20)
+    ymax = np.zeros(20)
     for i, (images, labels) in enumerate(val_loader):
         images = images.view((-1, 3, 224, 224))
         if gpu is not None:
@@ -29,6 +29,9 @@ def gethreshold(val_loader, transform, gpu=None, model_path='../checkpoints/resn
         outputs = outputs.view((-1, 20))
         y_true = labels.cpu().numpy()
         y_pred = outputs.cpu().numpy()
+        for k in range(val_loader.batch_size):
+            y_pred[k] = np.divide(np.exp(y_pred[k]), np.sum(np.exp(y_pred[k])))
+
         for k in range(0, val_loader.batch_size):
             for j in range(20):
                 if y_true[k][j] == 0:
@@ -78,7 +81,7 @@ if __name__ == '__main__':
     ])
 
     val_data = MyDataLoader(transform=val_transform, trainval='test', data_path='../dataset/',
-                            random_crops=10)
+                            random_crops=0)
     val_loader = torch.utils.data.DataLoader(dataset=val_data,
                                              batch_size=8,
                                              shuffle=False,
