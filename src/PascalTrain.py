@@ -9,8 +9,6 @@ import time
 import numpy as np
 import argparse
 
-from sklearn.metrics import average_precision_score
-
 # sys.path.append('../Utils')
 # TODO: Finish the class Logger(I don't actually know what it is used for)
 
@@ -117,7 +115,6 @@ def main():
     if args.gpu is not None:
         net.cuda()
 
-    
     criterion = torch.nn.MultiLabelSoftMarginLoss()
     optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, net.parameters()),
                                 lr=args.lr, momentum=0.9, weight_decay=0.0001)
