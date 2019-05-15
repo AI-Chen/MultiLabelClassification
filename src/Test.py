@@ -1,5 +1,6 @@
 import torch
 import numpy as np
+import os
 from scipy.misc import imread
 from PIL import Image
 import torchvision.transforms as transforms
@@ -8,8 +9,13 @@ from torch.autograd import Variable
 from Utils import load_model_from_file
 
 
-def test(transform, model_path='../checkpoints/190508_0909_001.pth', img_path='../test.jpg', gpu=None):
-    net = load_model_from_file(model_path, True)
+def test(transform, model_path='../checkpoints/190508_0909_001.pth', img_path='../test.jpg', model="resnet18", gpu=None):
+    net = load_model_from_file(model_path, model, True)
+    if gpu is not None:
+        net.cuda()
+        os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+        os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu)
+
     net.eval()
     img = imread(img_path, mode='RGB')
     img = Image.fromarray(img)
@@ -37,4 +43,4 @@ if __name__ == '__main__':
             transforms.ToTensor(),
             normalize,
         ])
-    test(val_transform)
+    test(val_transform, gpu=0)
