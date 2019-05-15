@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 from Utils import load_model_from_file, MyDataLoader
 
 
-def gethreshold(val_loader, transform, gpu=None, model_path='../checkpoints/resnet18_190515_1825_001.pth', model="resnet18"):
+def gethreshold(val_loader, transform, gpu=None, model_path='../checkpoints/resnet18_190515_2049_001.pth', model="resnet18"):
     net = load_model_from_file(model_path, model, True)
     if gpu is not None:
         net.cuda()
@@ -39,14 +39,13 @@ def gethreshold(val_loader, transform, gpu=None, model_path='../checkpoints/resn
             else:
                 y0.append(y_pred[k][0])
 
-
-        if i % 20 == 0:
+        if i % 100 == 0:
             plt.xlabel("X")
-            plt.title("1")
-            plt.hist(y1)
-            plt.xlabel("X")
-            plt.title("0")
-            plt.hist(y0)
+            plt.hist(y1, bins=50, normed=True)
+            plt.hist(y0, bins=50, normed=True)
+            print(y0)
+            print(y1)
+            plt.show()
 
 
 
@@ -63,8 +62,6 @@ def test(transform, model_path='../checkpoints/190512_1711_011.pth', img_path='.
     img = Image.fromarray(img)
     img = transform(img)
     img = img.view((-1, 3, 224, 224))
-    with torch.no_grad():
-        img = Variable(img)
     if gpu is not None:
         img = img.cuda()
 
