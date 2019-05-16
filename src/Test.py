@@ -1,33 +1,20 @@
 import torch
-import numpy as np
-import os
-from scipy.misc import imread
-from PIL import Image
 import torchvision.transforms as transforms
+import argparse
 
-from Utils import load_model_from_file
+from Utils import predict, eval_macc, MyDataLoader
 
 
-def test(transform, model_path='../checkpoints/resnet18_190515_1825_001.pth', img_path='../test.jpg', model="resnet18", gpu=None):
-    net = load_model_from_file(model_path, model, True)
-    if gpu is not None:
-        net.cuda()
-        os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-        os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu)
-
-    net.eval()
-    img = imread(img_path, mode='RGB')
-    img = Image.fromarray(img)
-    img = transform(img)
-    img = img.view((-1, 3, 224, 224))
-    if gpu is not None:
-        img = img.cuda()
-
-    outputs = net(img)
-    outputs = outputs.cpu().data
-    outputs = outputs.view((-1, 20))
-    print(outputs)
-
+parser = argparse.ArgumentParser(description='Predict a picture or evaluate the model on a test dataset')
+parser.add_argument("modelpath", type=str, help="The model for prediction or evaluation")
+parser.add_argument("--mode", type=str, required=True, choices=["predict", "evaluate"],
+                    help="Whether to predict a single image or evaluate a model on a dataset")
+parser.add_argument("--testpath", type=str, required=True, help="The path to the test image or dataset")
+parser.add_argument("--gpu", type=int, default=None, help="Which gpu to use(leave it None for cpu)")
+parser.add_argument("--model", type=str, required=True, help="Which kind of the model is the one for test")
+parser.add_argument("--crops", type=int, default=0, help="How many crops while testing")
+parser.add_argument("--batch", type=int, default=8, help="Batch size while evaluating")
+args = parser.parse_args()
 
 if __name__ == '__main__':
     normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
@@ -38,4 +25,11 @@ if __name__ == '__main__':
             transforms.ToTensor(),
             normalize,
         ])
-    test(val_transform)
+
+    if args.mode == "predict":
+        predict(val_transform, model_path=args.modelpath, img_path=args.testpath, model=args.model, gpu=args.gpu)
+    else:
+        val_data = MyDataLoader(transform=val_transform, trainval='test', data_path=args.testpath,
+                                random_crops=args.crops)
+        val_loader = torch.utils.data.DataLoader(dataset=val_data, batch_size=args.batch, shuffle=False, num_workers=4)
+        eval_macc(val_loader, model_path=args.modelpath, model=args.model, gpu=args.gpu, crops=args.crops)

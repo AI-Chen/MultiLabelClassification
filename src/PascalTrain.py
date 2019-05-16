@@ -18,7 +18,7 @@ import torchvision.transforms as transforms
 CORES = 4  # int(float(multiprocessing.cpu_count())*0.25)
 
 from Network import resnet18, resnet34, resnet50, resnet101, resnet152
-from Utils import MyDataLoader, adjust_learning_rate, load_model_from_file, compute_mAP, test_mAP
+from Utils import MyDataLoader, adjust_learning_rate, load_model_from_file, compute_mAP, eval_map
 
 parser = argparse.ArgumentParser(description='Train network on Pascal VOC 2012')
 parser.add_argument('pascal_path', type=str, help='Path to Pascal VOC 2012 folder')
@@ -83,8 +83,9 @@ def main():
                                                batch_size=args.batch, 
                                                shuffle=True,
                                                num_workers=CORES)
-    
-    val_data = MyDataLoader(transform=val_transform, trainval='test', data_path=args.pascal_path, random_crops=args.crops)
+
+    val_data = MyDataLoader(transform=val_transform, trainval='test', data_path=args.pascal_path,
+                            random_crops=args.crops)
     val_loader = torch.utils.data.DataLoader(dataset=val_data,
                                              batch_size=args.batch, 
                                              shuffle=False,
@@ -165,7 +166,7 @@ def main():
             print('Saved: '+args.checkpoint)
         
         if epoch % 5 == 0:
-            test_mAP(net, None, val_loader, steps, args.gpu, args.crops)
+            eval_map(net, None, val_loader, steps, args.gpu, args.crops)
         
         if os.path.exists(args.checkpoint+'/stop.txt'):
             # break without using CTRL+C
