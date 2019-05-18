@@ -1,7 +1,7 @@
 # MultiLabelClassification
 This is a project for Media&amp;Recognition course.
 
-## Usage Guide
+## Training Guide
 
 ### Training from scratch
 The working directory is src/, first enter the directory:
@@ -36,6 +36,7 @@ python ./PascalTrain.py\
     --gpu=0
     --finetune=1
 ```
+### Restart
 Use the parameter '--model' would help you continue your training after a stop. If you want to load the fc layer as well, add the parameter --fc
 ```Bash
 python ./PascalTrain.py\
@@ -44,3 +45,13 @@ python ./PascalTrain.py\
     --model=../checkpoints/example.pth
     --fc=1
 ``` 
+## Evaluating Guide
+Run the Test.py to evaluate your model on a dataset:
+```Bash
+python ./Test.py\
+    {$YOUR_MODEL_PATH}
+    --model={$YOUR_MODEL}
+    --mode=evaluate
+    --testpath={$DATASET_ROOT}
+    --gpu=0
+```

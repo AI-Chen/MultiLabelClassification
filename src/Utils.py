@@ -87,12 +87,10 @@ def eval_macc(val_loader, model_path="../checkpoints/resnet18_190515_2049_001.pt
         outputs = (outputs > 0)
         acc.append(np.sum((outputs.numpy() == labels.numpy()).astype(float))/(val_loader.batch_size*20))
 
-        if idx % 20 == 0:
-            macc = sum(acc) / len(acc)
-            print("Evaluating mAcc, Batch %d, mAcc: %f " % (idx, macc))
+        print("Evaluating mAcc, Batch_size: %d" % idx, end='\r')
 
     macc = sum(acc) / len(acc)
-    print("Final mAcc: %f" % macc)
+    print("\nFinal mAcc: %f" % macc)
     return macc
 
 
@@ -140,7 +138,7 @@ def eval_wacc(val_loader, model_path="../checkpoints/resnet18_190515_2049_001.pt
     acc = acc/len(val_loader.dataset)
 
     wacc = np.dot(freq, acc)
-    print("Final wAcc: %f" % wacc)
+    print("\nFinal wAcc: %f" % wacc)
     return wacc
 
 def predict(transform, model_path='../checkpoints/190513.2359_011_0.917.pth', img_path='../test.jpg', model="resnet18",
