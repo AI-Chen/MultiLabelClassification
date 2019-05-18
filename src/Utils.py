@@ -54,7 +54,7 @@ def eval_map(net, logger, val_loader, steps, gpu, crops):
 def eval_macc(val_loader, model_path="../checkpoints/resnet18_190515_2049_001.pth",
               model="resnet18", gpu=None, crops=0):
     """
-    Evaluate a model on a dataset.
+    Evaluate a model on a dataset, using mAcc as index
     :param val_loader: the dataloader(torch.utils.dataloader) object
     :param model_path: the path to the model
     :param model: which kind is the model
@@ -89,16 +89,17 @@ def eval_macc(val_loader, model_path="../checkpoints/resnet18_190515_2049_001.pt
 
         if idx % 20 == 0:
             macc = sum(acc) / len(acc)
-            print("Batch %d, mAcc: %f " % (idx, macc))
+            print("Evaluating mAcc, Batch %d, mAcc: %f " % (idx, macc))
 
     macc = sum(acc) / len(acc)
-    print("Final mAcc: %f", macc)
+    print("Final mAcc: %f" % macc)
     return macc
+
 
 def eval_wacc(val_loader, model_path="../checkpoints/resnet18_190515_2049_001.pth",
               model="resnet18", gpu=None, crops=0):
     """
-    Evaluate a model on a dataset.
+    Evaluate a model on a dataset, using wAcc as index
     :param val_loader: the dataloader(torch.utils.dataloader) object
     :param model_path: the path to the model
     :param model: which kind is the model
@@ -114,33 +115,31 @@ def eval_wacc(val_loader, model_path="../checkpoints/resnet18_190515_2049_001.pt
 
     acc = np.zeros(20)
     net.eval()
-    freq=np.zeros(20)
-    for idx, (images, labels) in enumerate(val_loader):
-        for i in range(len(labels)):
-            freq+=labels[i].numpy()
-    freq=freq/np.sum(freq)
+    freq = np.zeros(20)
 
     for idx, (images, labels) in enumerate(val_loader):
+        # Frequency of the labels
+        freq += np.sum(labels.numpy(), axis=0)
         images = images.view((-1, 3, 224, 224))
+
         if gpu is not None:
             images = images.cuda()
-
         outputs = net(images)
         outputs = outputs.cpu().data
         if crops != 0:
             outputs = outputs.view((-1, crops, 20))
-            outputs = outputs.mean(dim=1).view((-1, 20))
+            outputs = outputs.max(dim=1).view((-1, 20))
         else:
             outputs = outputs.view((-1, 20))
         outputs = (outputs > 0)
-        for i in range(len(outputs)):
-            acc+=(outputs[i].numpy()==labels[i].numpy()).astype(float)
+        acc += np.sum((outputs.numpy() == labels.numpy()), axis=0).astype(float)
 
-        # outputs: shape [batchsize * num_classes]
+        print("Evaluating mAcc, Batch_size: %d" % idx, end="\r")
 
+    freq = freq/np.sum(freq)
+    acc = acc/len(val_loader.dataset)
 
-
-    wacc = np.dot(freq,acc)/(len(val_loader.dataset))
+    wacc = np.dot(freq, acc)
     print("Final wAcc: %f" % wacc)
     return wacc
 

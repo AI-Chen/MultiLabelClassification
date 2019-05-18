@@ -7,7 +7,7 @@ from Utils import predict, eval_macc, MyDataLoader,eval_wacc
 
 parser = argparse.ArgumentParser(description='Predict a picture or evaluate the model on a test dataset')
 parser.add_argument("modelpath", type=str, help="The model for prediction or evaluation")
-parser.add_argument("--mode", type=str, required=True, choices=["predict", "evaluate"],
+parser.add_argument("--mode", type=str, default="evaluate", choices=["predict", "evaluate", "evalmacc", "evalwacc"],
                     help="Whether to predict a single image or evaluate a model on a dataset")
 parser.add_argument("--testpath", type=str, required=True, help="The path to the test image or dataset")
 parser.add_argument("--gpu", type=int, default=None, help="Which gpu to use(leave it None for cpu)")
@@ -32,5 +32,10 @@ if __name__ == '__main__':
         val_data = MyDataLoader(transform=val_transform, trainval='test', data_path=args.testpath,
                                 random_crops=args.crops)
         val_loader = torch.utils.data.DataLoader(dataset=val_data, batch_size=args.batch, shuffle=False, num_workers=4)
-#         eval_macc(val_loader, model_path=args.modelpath, model=args.model, gpu=args.gpu, crops=args.crops)
-        eval_wacc(val_loader, model_path=args.modelpath, model=args.model, gpu=args.gpu, crops=args.crops)
+        if args.mode == "evalmacc":
+            eval_macc(val_loader, model_path=args.modelpath, model=args.model, gpu=args.gpu, crops=args.crops)
+        if args.mode == "evalwacc":
+            eval_wacc(val_loader, model_path=args.modelpath, model=args.model, gpu=args.gpu, crops=args.crops)
+        if args.mode == "evaluate":
+            eval_macc(val_loader, model_path=args.modelpath, model=args.model, gpu=args.gpu, crops=args.crops)
+            eval_wacc(val_loader, model_path=args.modelpath, model=args.model, gpu=args.gpu, crops=args.crops)
