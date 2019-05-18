@@ -141,6 +141,7 @@ def eval_wacc(val_loader, model_path="../checkpoints/resnet18_190515_2049_001.pt
     print("\nFinal wAcc: %f" % wacc)
     return wacc
 
+
 def predict(transform, model_path='../checkpoints/190513.2359_011_0.917.pth', img_path='../test.jpg', model="resnet18",
             gpu=None):
     """

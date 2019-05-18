@@ -19,8 +19,16 @@ args = parser.parse_args()
 if __name__ == '__main__':
     normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                      std=[0.229, 0.224, 0.225])
-    val_transform = transforms.Compose([
-            transforms.Resize((224, 224)),
+    if args.crops == 0:
+        val_transform = transforms.Compose([
+                transforms.Resize((224, 224)),
+                # transforms.RandomHorizontalFlip(),
+                transforms.ToTensor(),
+                normalize,
+            ])
+    else:
+        val_transform = transforms.Compose([
+            transforms.RandomResizedCrop((224, 224)),
             # transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
             normalize,
