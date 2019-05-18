@@ -117,8 +117,8 @@ def eval_wacc(val_loader, model_path="../checkpoints/resnet18_190515_2049_001.pt
     freq=np.zeros(20)
     for idx, (images, labels) in enumerate(val_loader):
         for i in range(len(labels)):
-            freq=freq(labels[i]==1)+1
-    freq=freq/(idx*val_loader.batch_size)
+            freq+=labels[i].numpy()
+    freq=freq/np.sum(freq)
 
     for idx, (images, labels) in enumerate(val_loader):
         images = images.view((-1, 3, 224, 224))
@@ -134,14 +134,14 @@ def eval_wacc(val_loader, model_path="../checkpoints/resnet18_190515_2049_001.pt
             outputs = outputs.view((-1, 20))
         outputs = (outputs > 0)
         for i in range(len(outputs)):
-            acc=acc(outputs[i]==labels[i])+1
+            acc+=(outputs[i].numpy()==labels[i].numpy()).astype(float)
 
         # outputs: shape [batchsize * num_classes]
 
 
 
-    wacc = np.dot(freq,acc)/(20*idx*val_loader.batch_size)
-    print("Final wAcc: %f", wacc)
+    wacc = np.dot(freq,acc)/(len(val_loader.dataset))
+    print("Final wAcc: %f" % wacc)
     return wacc
 
 def predict(transform, model_path='../checkpoints/190513.2359_011_0.917.pth', img_path='../test.jpg', model="resnet18",

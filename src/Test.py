@@ -32,5 +32,5 @@ if __name__ == '__main__':
         val_data = MyDataLoader(transform=val_transform, trainval='test', data_path=args.testpath,
                                 random_crops=args.crops)
         val_loader = torch.utils.data.DataLoader(dataset=val_data, batch_size=args.batch, shuffle=False, num_workers=4)
-        eval_macc(val_loader, model_path=args.modelpath, model=args.model, gpu=args.gpu, crops=args.crops)
+#         eval_macc(val_loader, model_path=args.modelpath, model=args.model, gpu=args.gpu, crops=args.crops)
         eval_wacc(val_loader, model_path=args.modelpath, model=args.model, gpu=args.gpu, crops=args.crops)
