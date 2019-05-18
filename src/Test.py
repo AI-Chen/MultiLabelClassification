@@ -2,7 +2,7 @@ import torch
 import torchvision.transforms as transforms
 import argparse
 
-from Utils import predict, eval_macc, MyDataLoader
+from Utils import predict, eval_macc, MyDataLoader,eval_wacc
 
 
 parser = argparse.ArgumentParser(description='Predict a picture or evaluate the model on a test dataset')
@@ -33,3 +33,4 @@ if __name__ == '__main__':
                                 random_crops=args.crops)
         val_loader = torch.utils.data.DataLoader(dataset=val_data, batch_size=args.batch, shuffle=False, num_workers=4)
         eval_macc(val_loader, model_path=args.modelpath, model=args.model, gpu=args.gpu, crops=args.crops)
+        eval_wacc(val_loader, model_path=args.modelpath, model=args.model, gpu=args.gpu, crops=args.crops)

@@ -95,6 +95,54 @@ def eval_macc(val_loader, model_path="../checkpoints/resnet18_190515_2049_001.pt
     print("Final mAcc: %f", macc)
     return macc
 
+def eval_wacc(val_loader, model_path="../checkpoints/resnet18_190515_2049_001.pth",
+              model="resnet18", gpu=None, crops=0):
+    """
+    Evaluate a model on a dataset.
+    :param val_loader: the dataloader(torch.utils.dataloader) object
+    :param model_path: the path to the model
+    :param model: which kind is the model
+    :param gpu: which gpu to use
+    :param crops: how many random crops
+    :return: mAcc on the dataset
+    """
+    net = load_model_from_file(model_path, model=model, load_fc=True)
+    if gpu is not None:
+        net.cuda()
+        os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+        os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu)
+
+    acc = np.zeros(20)
+    net.eval()
+    freq=np.zeros(20)
+    for idx, (images, labels) in enumerate(val_loader):
+        for i in range(len(labels)):
+            freq=freq(labels[i]==1)+1
+    freq=freq/(idx*val_loader.batch_size)
+
+    for idx, (images, labels) in enumerate(val_loader):
+        images = images.view((-1, 3, 224, 224))
+        if gpu is not None:
+            images = images.cuda()
+
+        outputs = net(images)
+        outputs = outputs.cpu().data
+        if crops != 0:
+            outputs = outputs.view((-1, crops, 20))
+            outputs = outputs.mean(dim=1).view((-1, 20))
+        else:
+            outputs = outputs.view((-1, 20))
+        outputs = (outputs > 0)
+        for i in range(len(outputs)):
+            acc=acc(outputs[i]==labels[i])+1
+
+        # outputs: shape [batchsize * num_classes]
+
+
+
+    wacc = np.dot(freq,acc)/(20*idx*val_loader.batch_size)
+    print("Final wAcc: %f", wacc)
+    return wacc
 
 def predict(transform, model_path='../checkpoints/190513.2359_011_0.917.pth', img_path='../test.jpg', model="resnet18",
             gpu=None):
