@@ -132,7 +132,7 @@ def eval_wacc(val_loader, model_path="../checkpoints/resnet18_190515_2049_001.pt
         outputs = (outputs > 0)
         acc += np.sum((outputs.numpy() == labels.numpy()), axis=0).astype(float)
 
-        print("Evaluating mAcc, Batch_size: %d" % idx, end="\r")
+        print("Evaluating wAcc, Batch_size: %d" % idx, end="\r")
 
     freq = freq/np.sum(freq)
     acc = acc/len(val_loader.dataset)
