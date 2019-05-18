@@ -79,7 +79,7 @@ def eval_macc(val_loader, model_path="../checkpoints/resnet18_190515_2049_001.pt
         outputs = outputs.cpu().data
         if crops != 0:
             outputs = outputs.view((-1, crops, 20))
-            outputs = outputs.mean(dim=1).view((-1, 20))
+            outputs = outputs.max(dim=1)[0].view((-1, 20))
         else:
             outputs = outputs.view((-1, 20))
 
@@ -126,7 +126,7 @@ def eval_wacc(val_loader, model_path="../checkpoints/resnet18_190515_2049_001.pt
         outputs = outputs.cpu().data
         if crops != 0:
             outputs = outputs.view((-1, crops, 20))
-            outputs = outputs.max(dim=1).view((-1, 20))
+            outputs = outputs.max(dim=1)[0].view((-1, 20))
         else:
             outputs = outputs.view((-1, 20))
         outputs = (outputs > 0)
