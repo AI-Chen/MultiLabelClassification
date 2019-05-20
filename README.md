@@ -1,6 +1,8 @@
 # MultiLabelClassification
 This is a project for Media&amp;Recognition course.
 
+Reference: https://github.com/bbrattoli/PascalClassificationPytorch
+
 ## Training Guide
 
 ### Training from scratch

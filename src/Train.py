@@ -1,8 +1,4 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Thu Sep 14 12:16:31 2017
-@author: bbrattol
-"""
 import os
 import time
 import numpy as np
