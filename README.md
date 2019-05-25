@@ -47,15 +47,17 @@ python ./Train.py\
 ```
 This will automatically generate a checkpoint path, and then the .pth checkpoint file would be written there.
 
-You can use --epochs, --batch, --lr to appoint the parameters too:
+You can use --epochs, --batch, --lr, --model to appoint the parameters too:
 ```Bash
 python ./Train.py\
     {$YOUR_DATASET_PATH}\
     --gpu={$YOUR_GPU_INDEX}\
     --epochs={$MAX_TRAINING_EPOCH}\
     --batch={$BATCH_SIZE}\
-    --lr={$LEARNING_RATE}
+    --lr={$LEARNING_RATE}\
+    --model={$YOUR_MODEL}
 ```
+Notes: models can be chosen from resnet18, 34, 50, 101, 152
 
 ### Finetuning(May need Internet)
 Use the parameter '--finetune' would enable the usage of pytorch implemented pretrained model. 
@@ -73,7 +75,7 @@ Use the parameter '--model' would help you continue your training after a stop. 
 python ./Train.py\
     ../dataset\
     --gpu=0\
-    --model=../checkpoints/example.pth\
+    --modelpath=../checkpoints/example.pth\
     --fc=1
 ``` 
 ## Evaluating Guide
