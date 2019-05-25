@@ -143,7 +143,7 @@ def eval_wacc(val_loader, model_path="../checkpoints/resnet18_190515_2049_001.pt
 
 
 def predict(transform, model_path='../checkpoints/190513.2359_011_0.917.pth', img_path='../test.jpg', model="resnet18",
-            gpu=None):
+            crops=0, gpu=None):
     """
     Predict a image with the model
     :param transform: the torchvision.transforms object. Proper transform may help prediction
@@ -162,14 +162,24 @@ def predict(transform, model_path='../checkpoints/190513.2359_011_0.917.pth', im
     net.eval()
     img = imread(img_path, mode='RGB')
     img = Image.fromarray(img)
-    img = transform(img)
+    if crops == 0:
+        img = transform(img)
+    else:
+        img_crop = []
+        for i in range(0, crops):
+            img_crop.append(transform(img))
+        img = torch.stack(img_crop)
     img = img.view((-1, 3, 224, 224))
     if gpu is not None:
         img = img.cuda()
 
     outputs = net(img)
     outputs = outputs.cpu().data
-    outputs = outputs.view((-1, 20))
+    if crops != 0:
+        outputs = outputs.view((-1, crops, 20))
+        outputs = outputs.max(dim=1)[0].view((-1, 20))
+    else:
+        outputs = outputs.view((-1, 20))
     print("output tensor:", outputs)
     print("Results:", (outputs > 0) * 1)
     Categories = np.array(['person', 'bird', 'cat', 'cow',
