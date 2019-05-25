@@ -85,7 +85,7 @@ def eval_macc(val_loader, model_path="../checkpoints/resnet18_190515_2049_001.pt
 
         # outputs: shape [batchsize * num_classes]
         outputs = (outputs > 0)
-        acc.append(np.sum((outputs.numpy() == labels.numpy()).astype(float))/(val_loader.batch_size*20))
+        acc.append(np.sum((outputs.numpy() == labels.numpy()).astype(float)) / (val_loader.batch_size * 20))
 
         print("Evaluating mAcc, Batch_size: %d" % idx, end='\r')
 
@@ -134,8 +134,8 @@ def eval_wacc(val_loader, model_path="../checkpoints/resnet18_190515_2049_001.pt
 
         print("Evaluating wAcc, Batch_size: %d" % idx, end="\r")
 
-    freq = freq/np.sum(freq)
-    acc = acc/len(val_loader.dataset)
+    freq = freq / np.sum(freq)
+    acc = acc / len(val_loader.dataset)
 
     wacc = np.dot(freq, acc)
     print("\nFinal wAcc: %f" % wacc)
@@ -172,6 +172,12 @@ def predict(transform, model_path='../checkpoints/190513.2359_011_0.917.pth', im
     outputs = outputs.view((-1, 20))
     print("output tensor:", outputs)
     print("Results:", (outputs > 0) * 1)
+    Categories = np.array(['person', 'bird', 'cat', 'cow',
+                           'dog', 'horse', 'sheep', 'aeroplane', 'bicycle',
+                           'boat', 'bus', 'car', 'motorbike',
+                           'train', 'bottle', 'chair',
+                           'diningtable', 'pottedplant', 'sofa', 'tvmonitor'])
+    print("Categories:", Categories[np.where(outputs[0].numpy() > 0)])
 
 
 def adjust_learning_rate(optimizer, epoch, init_lr, step=80, decay=0.1):
