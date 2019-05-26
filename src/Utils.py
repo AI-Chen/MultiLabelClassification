@@ -26,6 +26,10 @@ def compute_mAP(labels, outputs):
 
 
 def eval_map(net, logger, val_loader, steps, gpu, crops):
+    if gpu is not None:
+        net.cuda()
+        os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+        os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu)
     mAP = []
     net.eval()
     for i, (images, labels) in enumerate(val_loader):
