@@ -2,11 +2,12 @@ import torch
 import torchvision.transforms as transforms
 import argparse
 
-from Utils import predict, eval_macc, MyDataLoader, eval_wacc
+from Utils import predict, eval_macc, MyDataLoader, eval_wacc, eval_map, eval_f1, load_model_from_file
 
 parser = argparse.ArgumentParser(description='Predict a picture or evaluate the model on a test dataset')
 parser.add_argument("modelpath", type=str, help="The model for prediction or evaluation")
-parser.add_argument("--mode", type=str, default="evaluate", choices=["predict", "evaluate", "evalmacc", "evalwacc"],
+parser.add_argument("--mode", type=str, default="evaluate",
+                    choices=["predict", "evaluate", "evalmacc", "evalwacc", "evalmap", "evalf1"],
                     help="Whether to predict a single image or evaluate a model on a dataset")
 parser.add_argument("--testpath", type=str, required=True, help="The path to the test image or dataset")
 parser.add_argument("--gpu", type=int, default=None, help="Which gpu to use(leave it None for cpu)")
@@ -44,6 +45,11 @@ if __name__ == '__main__':
             eval_macc(val_loader, model_path=args.modelpath, model=args.model, gpu=args.gpu, crops=args.crops)
         if args.mode == "evalwacc":
             eval_wacc(val_loader, model_path=args.modelpath, model=args.model, gpu=args.gpu, crops=args.crops)
+        if args.mode == "evalmap":
+            eval_map(load_model_from_file(args.modelpath, model=args.model, load_fc=1), logger=None,
+                     val_loader=val_loader, steps=0, gpu=args.gpu, crops=args.crops)
+        if args.mode == "evalf1":
+            eval_f1(val_loader, model_path=args.modelpath, model=args.model, gpu=args.gpu, crops=args.crops)
         if args.mode == "evaluate":
             eval_macc(val_loader, model_path=args.modelpath, model=args.model, gpu=args.gpu, crops=args.crops)
             eval_wacc(val_loader, model_path=args.modelpath, model=args.model, gpu=args.gpu, crops=args.crops)
