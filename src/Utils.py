@@ -338,18 +338,8 @@ class MyDataLoader(data.Dataset):
                    mode='RGB')
         x = Image.fromarray(x)
 
-        # Resize directly instead of the strange operations done below...
+        # Resize directly
         x = x.resize((224, 224), Image.BILINEAR)
-
-        # scale = np.random.rand() * 2 + 0.25
-        # w = int(x.size[0] * scale)
-        # h = int(x.size[1] * scale)
-        # if min(w, h) < 227:
-        #     scale = 227 / min(w, h)
-        #     w = int(x.size[0] * scale)
-        #     h = int(x.size[1] * scale)
-
-        # x = x.resize((w,h), Image.BILINEAR) # Random scale
 
         if self.random_crops == 0:
             x = self.transform(x)
