@@ -37,7 +37,7 @@ args = parser.parse_args()
 #    '--model','resnet18'
 # ])
 prefix = time.strftime("%y%m%d_%H%M", time.localtime())
-models ={
+models = {
     'resnet18': resnet18,
     'resnet34': resnet34,
     'resnet50': resnet50,
@@ -114,10 +114,6 @@ def main():
     criterion = torch.nn.MultiLabelSoftMarginLoss()
     optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, net.parameters()),
                                 lr=args.lr, momentum=0.9, weight_decay=0.0001)
-    
-    if not os.path.exists(args.checkpoint):
-        os.makedirs(args.checkpoint+'/train')
-        os.makedirs(args.checkpoint+'/test')
     
 
     ############## TRAINING ###############
