@@ -154,9 +154,8 @@ def main():
         if epoch % 5 == 0:
             filename = '%s/%s_%s_%03i.pth' % (args.checkpoint, args.model, prefix, epoch+1)
             torch.save(net.state_dict(), filename)
-            print('Saved: '+args.checkpoint)
-        
-        if epoch % 5 == 0:
+            print('Saved: '+args.checkpoint+"/"+filename)
+
             eval_map(net, None, val_loader, steps, args.gpu, args.crops)
         
         if os.path.exists(args.checkpoint+'/stop.txt'):
