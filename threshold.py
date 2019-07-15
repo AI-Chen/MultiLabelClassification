@@ -1,3 +1,7 @@
+“”“
+This is added to the project for manually figure out the best threshold in predicting.
+The file is not directly depended by any of this project, so I put it outside along with preprocess
+”“”
 import torch
 import os
 import torchvision.transforms as transforms
